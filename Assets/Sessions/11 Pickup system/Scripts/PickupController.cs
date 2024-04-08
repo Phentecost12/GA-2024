@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Animations.Rigging;
 using UnityEngine.PlayerLoop;
+using UnityEngine.UIElements;
 using Quaternion = UnityEngine.Quaternion;
 using Vector2 = UnityEngine.Vector2;
 using Vector3 = UnityEngine.Vector3;
@@ -34,7 +35,7 @@ public class PickupController : MonoBehaviour//, IPicker
             this.animationDirection = animationDirection;
         }
     }
-    
+
     [SerializeField] private float maxNonTurnAngle;
     [SerializeField] private float maxReachingDistance;
     [SerializeField] private float maxPerSideAngle;
@@ -44,8 +45,8 @@ public class PickupController : MonoBehaviour//, IPicker
     [SerializeField] private Animator animator;
 
     public List<GameObject> availablePickables = new List<GameObject>();
-    
-    
+
+
 
     private List<SphereQuarterData> sphereQuarterDirections;
     private int currentNearestQuarterDirection = -1;
@@ -99,7 +100,7 @@ public class PickupController : MonoBehaviour//, IPicker
         return ret;
     }
 
-    public void PickUpNearest()
+    /*public void PickUpNearest()
     {
         //Find nearest non-null pickable
         currentGrabbedItem = availablePickables.Where(pickable => pickable != null).OrderBy(pickable =>
@@ -121,7 +122,33 @@ public class PickupController : MonoBehaviour//, IPicker
         animator.SetFloat("PickupDirectionY", animDir.y);
         animator.SetTrigger("Pickup");
         
+    } */
+
+
+    public void PickUpNearest()
+     {
+        //Find nearest non-null pickable
+            currentGrabbedItem = availablePickables.Where(pickable => pickable != null).OrderBy(pickable =>
+            {
+            Vector3 itemDir = torsoReference.position - item.position;
+            return sqrMagnitude * dot;
+        }).FirstOrDefault();
+
+            if (nearestItem == default) return;
+            Vector3 localItemPosition = targetReference.InverseTransformPoint(nearestItem.position);
+        int
+        currentNearestQuarterDirection = GetNearestQuarterDirection(localSpaceItemDir);
+
+        Vector2 animDir = sphereQuarterDirections[currentNearestQuarterDirection].animationDirection;
+
+        currentEditedConstraint = animDir.x< 0 ? leftHand : rightHand;
+            currentEditedConstraint.data.target.position = TorsoReference.TransformPoint(localSpaceItemDir);
+
+            animator.SetFloat("PickupDirectionX", animDir.x);
+            animator.SetFloat("PickupDirectionY", animDir.y);
+            animator.SetTrigger("Pickup");
     }
+
 
     private void OnValidate()
     {
